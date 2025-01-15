@@ -4,15 +4,23 @@ import streamlit as st
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
-from xgboost import XGBClassifier
 from sklearn.metrics import accuracy_score
+
+# Try importing XGBoost
+try:
+    from xgboost import XGBClassifier
+    has_xgboost = True
+except ImportError:
+    has_xgboost = False
 
 # Streamlit app title and intro
 st.title('🤖 ThinkTankers ML App')
 st.write('This app builds a machine learning model for homelessness risk prediction.')
 
 # Data Loading
-df = pd.read_csv("https://raw.githubusercontent.com/AleeyaHayfa/shiny-broccoli/refs/heads/master/Social_Housing_cleaned.csv")
+df = pd.read_csv(
+    "https://raw.githubusercontent.com/AleeyaHayfa/shiny-broccoli/refs/heads/master/Social_Housing_cleaned.csv"
+)
 x_raw = df.drop('AtRiskOfOrExperiencingHomelessnessFlag', axis=1)
 y_raw = df['AtRiskOfOrExperiencingHomelessnessFlag']
 
@@ -40,7 +48,11 @@ X_train, X_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_
 
 # Model selection and evaluation
 st.sidebar.header('Model Selection')
-model_choice = st.sidebar.radio('Choose a model:', ['Random Forest', 'Logistic Regression', 'XGBoost'])
+model_options = ['Random Forest', 'Logistic Regression']
+if has_xgboost:
+    model_options.append('XGBoost')
+
+model_choice = st.sidebar.radio('Choose a model:', model_options)
 
 if model_choice == 'Random Forest':
     model = RandomForestClassifier(random_state=42)
@@ -58,6 +70,19 @@ st.write(f'**Model Accuracy:** {accuracy:.2f}')
 
 # Results
 st.subheader('Prediction Results')
+pred_df = pd.DataFrame(prediction_proba, columns=['No', 'Yes'])
+st.write('Prediction Probabilities:')
+st.dataframe(pred_df.style.format({'No': '{:.2f}', 'Yes': '{:.2f}'}))
+result = 'At Risk' if prediction[0] == 1 else 'Not at Risk'
+st.success(f'Prediction: {result}')
+
+# XGBoost Dependency Note
+if not has_xgboost:
+    st.warning(
+        "XGBoost is not installed. The XGBoost model is unavailable. "
+        "To enable it, install the library by running `pip install xgboost` in your environment."
+    )
+
 pred_df = pd.DataFrame(prediction_proba, columns=['No', 'Yes'])
 st.write('Prediction Probabilities:')
 st.dataframe(pred_df.style.format({'No': '{:.2f}', 'Yes': '{:.2f}'}))
