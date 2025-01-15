@@ -4,7 +4,6 @@ import streamlit as st
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
-from xgboost import XGBClassifier
 from sklearn.metrics import accuracy_score
 
 # Title and description
@@ -110,7 +109,7 @@ def logistic_regression(X_train, y_train, X_test, y_test, input_row):
 
 # Model Selection and Training
 with st.expander('Model Selection & Training'):
-    model_option = st.selectbox('Choose a Model', ['Random Forest', 'Logistic Regression', 'XGBoost'])
+    model_option = st.selectbox('Choose a Model', ['Random Forest', 'Logistic Regression'])
 
     # Split the dataset
     X_train, X_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=42)
@@ -123,12 +122,6 @@ with st.expander('Model Selection & Training'):
 
     elif model_option == 'Logistic Regression':
         accuracy, prediction, prediction_proba = logistic_regression(X_train, y_train, X_test, y_test, input_row)
-
-    elif model_option == 'XGBoost':
-        model = MLModel(XGBClassifier(use_label_encoder=False, eval_metric='logloss', random_state=42), 'XGBoost')
-        model.train(X_train, y_train)
-        accuracy = model.evaluate(X_test, y_test)
-        prediction, prediction_proba = model.predict(input_row)
 
     st.write(f'Model Accuracy: {accuracy:.2f}')
 
